@@ -48,6 +48,13 @@ Sharedown è un'app desktop **Electron** per scaricare video da SharePoint/OneDr
    - aggiornare progresso e UI.
 4. I moduli di login (`loginModules/`) astraggono i vari flussi di autenticazione.
 
+## Come vengono gestite URL con lettere accentate
+- In input, Sharedown normalizza gli URL tramite l'oggetto nativo `URL` (`sharedown/utils.js`, `setAsWebPlayerURL`) prima di metterli in coda.
+- Questo passaggio serializza l'URL in forma valida (`urlObj.href`), quindi eventuali caratteri non ASCII nel path/query (incluse lettere accentate) vengono trattati come URL-encoded.
+- Nel flusso “direct”, prima di chiamare `yt-dlp`, il link viene di nuovo ricostruito con `new URL(...).toString()` (`preload.js`), mantenendo la forma codificata.
+- Per l'import da cartelle SharePoint, i percorsi file arrivano dall'API come `ServerRelativeUrl` e vengono composti in URL complete (`preload.js`, `_getVideoURLsInFold`), poi riutilizzati dal downloader.
+- Eccezione specifica gestita manualmente: il carattere `#` viene convertito in `%23` in fase di inserimento URL (`sharedown/sharedown.js`) per evitare troncamenti/interpretazioni errate del fragment.
+
 ## Build e distribuzione
 - `npm start`: avvio locale.
 - `npm run pack`: build cartella applicazione.
